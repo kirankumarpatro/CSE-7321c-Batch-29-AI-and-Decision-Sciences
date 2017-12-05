@@ -1,0 +1,68 @@
+---
+title: "Digit_NeuralNet"
+author: "Kiran Kumar Patro"
+date: "August 30, 2017"
+output: html_document
+---
+
+```{r}
+rm(list = ls())
+setwd("C:/Users/welcome/Desktop/New folder/nn lab activity")
+```
+
+```{r}
+library(mxnet)
+train_data<-read.csv("train_sample.csv",sep=",")
+test_data<-read.csv("test_sample.csv",sep=",")
+```
+
+```{r}
+train_data[,!(train_data)%in%c("label")]<-train_data[,!(train_data)%in%c("label")]/255
+test_data[,!(test_data)%in%c("label")]<-test_data[,!(test_data)%in%c("label")]/255
+```
+
+```{r}
+train_matrix.x<-data.matrix(train_data[,!(train_data)%in%c("label")])
+train_matrix.y<-train_data$label
+
+test_matrix.x<-data.matrix(test_data[,!(test_data)%in%c("label")])
+test_matrix.y<-test_data$label
+```
+
+```{r}
+mx.set.seed(0)
+Sys.time() -> start
+model_cl <- mx.mlp(train_matrix.x, train_matrix.y, hidden_node=c(10), out_node=10,activation="tanh",out_activation="softmax",
+                num.round=20, array.batch.size=200, learning.rate=0.09, momentum=0.9,
+                eval.metric=mx.metric.accuracy)
+Sys.time() -> end
+```
+
+
+```{r}
+preds = predict(model_cl, test_matrix.x)
+
+preds=t(preds)
+```
+
+```{r}
+pred.label = ifelse(preds[,2]<0.55, 0, 1)
+
+conf.mat = table(pred.label, test_matrix.y)
+conf.mat
+accuracy = sum(diag(conf.mat))/sum(conf.mat)
+accuracy
+precision = conf.mat[2,2]/sum(conf.mat[2,])
+precision
+recall = conf.mat[2,2]/sum(conf.mat[,2])
+recall
+
+table(test.y)
+```
+
+
+
+
+
+
+

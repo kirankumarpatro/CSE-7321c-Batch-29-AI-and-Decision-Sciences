@@ -1,0 +1,71 @@
+---
+title: "Housing_NeuralNet"
+author: "Kiran Kumar Patro"
+date: "August 30, 2017"
+output: html_document
+---
+
+```{r}
+rm(list = ls())
+setwd("C:/Users/welcome/Desktop/New folder/nn lab activity")
+
+```
+
+
+```{r}
+library(mxnet)
+housing<-read.csv("housing.csv",sep=",")
+str(housing)
+sum(is.na(housing))
+```
+
+```{r}
+set.seed(1234)
+
+train_rows <- sample(x=1:nrow(housing),size = .7*nrow(housing))
+
+train_data<-housing[train_rows,]
+test_data<-housing[-train_rows,]
+```
+
+```{r}
+
+library(caret)
+
+std_method <- preProcess(train_data[,!names(train_data) %in% c("OwnOcc")],method = c("center","scale"))
+
+train_data[,!names(train_data) %in% c("OwnOcc")] <- predict(object = std_method,newdata = train_data[,!names(train_data) %in% c("OwnOcc")])
+
+test_data[,!names(test_data) %in% c("OwnOcc")] <- predict(object = std_method,newdata = test_data[,!names(test_data) %in% c("OwnOcc")])
+
+
+
+train.x<- data.matrix(train_data[,!names(train_data)  %in% c("OwnOcc")])
+train.y <-train_data$OwnOcc
+
+test.x<-data.matrix(test_data[,!names(test_data) %in% c("OwnOcc")])
+test.y <-test_data$OwnOcc
+```
+
+
+```{r}
+mx.set.seed(0)
+Sys.time()-> start
+model_reg <-mx.mlp(train.x, train.y, hidden_node=c(10), out_node=1, activation="tanh", out_activation="rmse",
+                   num.round=20, array.batch.size=500, learning.rate=0.07, momentum=0.9,
+                   eval.metric=mx.metric.rmse)
+
+Sys.time()->end
+```
+
+
+```{r}
+preds_reg <- predict(model_reg,test.x)
+library(DMwR)
+
+error_reg <- regr.eval(preds_reg,test.y)
+error_reg
+```
+
+
+
